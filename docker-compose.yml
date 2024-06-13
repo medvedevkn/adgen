@@ -1,0 +1,26 @@
+version: '3.10'
+services:
+  app:
+    build: .
+    container_name: fastapi-app
+    ports:
+      - "8000:8000"    
+    command: uvicorn app:app --host 0.0.0.0 --forwarded-allow-ips="*" --reload
+
+  subscriber:
+    build: .
+    command: python3 subs/subscriber.py
+    ports:
+      - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "dockerhost:127.0.0.1"
+      - "host.docker.internal:127.0.0.1"
+      - "host.docker.internal:172.17.0.1"  
+      - "host.docker.internal:172.18.0.1"  
+      - "host.docker.internal:0.0.0.0" 
+      - "dockerhost:147.45.247.128"
+      - "dockerhost:147.45.247.209"
+ #     - "dockerhost:https://cnln4f-128-0-134-129.ru.tuna.am/"
+   
+    

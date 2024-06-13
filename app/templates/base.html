@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html >
+<head>
+  <title>AdsGenerator.com</title>
+  <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+  <meta charset="UTF-8">
+</head>
+
+<body>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
+
+<div class="container">
+  <div class="frame">
+    <div class="head">
+        <h2 class="title">Генератор рекламы</h2>
+        <img class="brain_logo" src="imgs/brain.gif" alt="" width="48px" height="48px">
+    </div>
+    <div ng-app ng-init="checked = false">
+				<form class="form-signin" action="" method="post" name="form">
+          <label for="api">Ключ доступа</label>
+          <input class="form-styling" type="text" id="api" name="api" placeholder=""/>
+          <label for="keyword">Ключевое слово</label>
+          <input class="form-styling" type="text" id="keyword" name="keyword" placeholder=""/>
+          <div class="btn-animate">
+            <button type="button" class="btn-signin" onclick="send()">Сгенерировать</button>
+          </div>
+          <label for="status" class="status-label">Статус запроса</label>
+          <textarea disabled class="form-styling text" rows="5" id="answer" name="status" placeholder=""></textarea>
+          <label for="result">Результат</label>
+          <textarea disabled class="form-styling response" rows="10" id="model_response" name="result" placeholder=""></textarea>
+    </div>
+    <div class="button-block">
+      <div class="btn-animate">
+        <button type="button" class="btn-signin" onclick="like()">Хорошо</button>
+      </div>
+      <div class="btn-animate">
+        <button type="button" class="btn-signin" onclick="dislike()">Плохо</button>
+      </div>
+    </div>
+    
+    <script>
+        async function send(){
+     
+            const textarea = document.getElementById('answer')
+            const model_res = document.getElementById('model_response')
+            const api_key = document.getElementById("api").value;
+            const kw = document.getElementById("keyword").value;
+            textarea.value = '';
+            model_res.value='';
+
+            // отправляем запрос
+            const response = await fetch("/postdata", {
+                    method: "POST",
+                    headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        api: api_key,
+                        keyword: kw,
+                        gen_id: -1
+                    })
+                });
+                textarea.value = '';
+                if (response.ok) {
+                    const data = await response.json(); 
+                    textarea.value = data.message;
+                    $gen = data.cur_gen_id;
+                }
+                else
+                    console.log(response);
+      
+
+            const checker = await fetch("/check", 
+                    {
+                    method: "POST",
+                    headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        api: api_key,
+                        keyword: kw,
+                        gen_id: $gen
+                        })
+                    });
+                model_res.value = 'Модель недоступна';
+           
+                if (checker.ok) {
+                    const updated = await checker.json(); 
+                    model_res.value = updated.message;
+                }
+                else
+                    console.log(checker);
+        }
+   
+        async function like(){
+            // отправляем запрос
+            const textarea = document.getElementById('answer')
+
+            const like_response = await fetch("/like", {
+                    method: "POST",
+                    headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        api: "api_key",
+                        keyword: "kw",
+                        gen_id: $gen
+                    })
+                });
+                if (like_response.ok) {
+                    const res = await like_response.json(); 
+                    textarea.value = textarea.value + '\nСпасибо за обратную связь!'
+                }
+                else
+                    console.log(like_response);
+         }
+
+         async function dislike(){
+            // отправляем запрос
+            const textarea = document.getElementById('answer')
+
+            const dislike_response = await fetch("/dislike", {
+                    method: "POST",
+                    headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        api: "api_key",
+                        keyword: "kw",
+                        gen_id: $gen
+                    })
+                });
+                if (dislike_response.ok) {
+                    const res = await dislike_response.json(); 
+                    textarea.value = textarea.value + '\nСпасибо за обратную связь!'
+                }
+                else
+                    console.log(dislike_response);
+         }
+    </script>
+</body>
+</html>
